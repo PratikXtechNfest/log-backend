@@ -55,35 +55,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Middleware for Authen ca on
-
-// const authenticate = (req, res, next) => {
-//   const token = req.cookies.auth_token || req.header("Authorization");
-
-//   if (!token) return res.status(401).json({ message: "Access Denied" });
-
-//   try {
-//     const verified = jwt.verify(token, process.env.JWT_SECRET);
-
-//     req.user = verified;
-
-//     console.log("req.user", req.user);
-
-//     const userData = {
-//       user_id: user.id,
-//       email: user.email,
-//       referredBy: user.referredBy,
-//     };
-
-//     console.log(userData);
-
-//     req.userData = userData;
-
-//     next();
-//   } catch (err) {
-//     res.status(400).json({ message: "Invalid Token" });
-//   }
-// };
 
 // ✅ Middleware for Authentication
 const authenticate = async (req, res, next) => {
@@ -125,7 +96,7 @@ const authenticate = async (req, res, next) => {
 
 app.post("/signup", async (req, res) => {
   const { name, email, password, role, referral_code } = req.body;
-  console.log("signup", name, email, password, role, referral_code);
+  // console.log("signup", name, email, password, role, referral_code);
 
   try {
     // Hash Password
@@ -172,7 +143,7 @@ app.post("/signup", async (req, res) => {
 // *2️⃣ Login API*
 app.post("/login", (req, res) => {
   const { email, password, rememberMe } = req.body;
-  console.log(" login ", email, password, rememberMe);
+  // console.log(" login ", email, password, rememberMe);
 
   db.promise()
     .query(`SELECT * FROM users WHERE email = ?`, [email])
@@ -184,10 +155,10 @@ app.post("/login", (req, res) => {
       const validPass = await bcrypt.compare(password, user.password);
       if (!validPass)
         return res.status(400).json({ message: "Invalid Password" });
-      console.log("1");
+      // console.log("1");
       // Set token expiration based on "Remember Me"
       const expiresIn = rememberMe ? "30d" : "1d"; // 30 days if checked, else 1 day
-      console.log("3");
+      // console.log("3");
 
       // Store token in HTTP-only cookie
       const cookieOptions = {
@@ -196,7 +167,7 @@ app.post("/login", (req, res) => {
       };
 
       const token = generateToken(user, expiresIn);
-      console.log("4");
+      // console.log("4");
       if (rememberMe) {
         // Store token for persistent login (30 days)
         res.cookie("auth_token", token, {
@@ -210,14 +181,14 @@ app.post("/login", (req, res) => {
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
         });
       }
-      console.log("5");
+      // console.log("5");
       const userData = {
         user_id: user.id,
         email: user.email,
       };
 
       // Generate JWT Token
-      console.log("7");
+      // console.log("7");
       return res.json({
         message: "Login Successful",
         token,
@@ -339,7 +310,7 @@ app.post("/add-reseller", authenticate, async (req, res) => {
 
 app.post("/check-used-password", async (req, res) => {
   const { email, newPassword } = req.body;
-  console.log("check ", email, newPassword);
+  // console.log("check ", email, newPassword);
 
   try {
     const [oldPasswords] = await db
@@ -351,7 +322,7 @@ app.post("/check-used-password", async (req, res) => {
     for (const record of oldPasswords) {
       const match = await bcrypt.compare(newPassword, record.password_hash);
       if (match) {
-        console.log("Password has been used before");
+        // console.log("Password has been used before");
 
         return res.status(400).json({
           message:
